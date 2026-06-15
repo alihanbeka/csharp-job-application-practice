@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 class Application
 {
@@ -8,12 +9,18 @@ class Application
     public string Position { get;set;}
     public string Status { get;set;}
 
-    public Application(string companyName,string position)
+    public Application(string companyName, string position)
     {
         CompanyName = companyName;
         Position = position;
         Status = "Applied";
     }
+    public Application(string companyName, string position, string status)
+{
+    CompanyName = companyName;
+    Position = position;
+    Status = status;
+}
 
     public void Print()
     {
@@ -32,9 +39,149 @@ class Application
 class Program
 {
 
-    static void Main()
+    static void DeleteApplication(List<Application> applications)
+    {
+        int index = ReadApplicationIndex(applications);
+
+        if (index == -1)
+        {
+            return;
+        }
+
+        applications.RemoveAt(index);
+        SaveApplications(applications);
+
+        Console.WriteLine("Application deleted.");
+        Console.WriteLine();
+    }
+    static void ChangeApplicationStatus(List<Application> applications)
+    {
+        int index = ReadApplicationIndex(applications);
+        if (index == -1)
+        {
+            return;
+
+        }
+        Console.WriteLine("New Status;");
+        string newStatus = Console.ReadLine();
+        applications[index].ChangeStatus(newStatus);
+        SaveApplications(applications);
+
+        Console.WriteLine("Status changed.");
+        Console.WriteLine();
+
+    }
+    static void ListApplication(List<Application> applications)
+    {
+        if (applications.Count == 0)
+        {
+            Console.WriteLine("No applications found.");
+            Console.WriteLine();
+            return;
+        }
+        Console.WriteLine("Applications:");
+        Console.WriteLine();
+
+        foreach (Application application in applications)
+        {
+            application.Print();
+        }
+
+    }
+    static void AddApplication(List<Application>applications)
+    {
+        Console.WriteLine("Company Name:");
+        string companyName = Console.ReadLine();
+
+        Console.WriteLine("Position:");
+        string position = Console.ReadLine();
+
+        Application newApplication = new Application(companyName, position);
+        applications.Add(newApplication);
+        SaveApplications(applications);
+
+        Console.WriteLine("Application added.");
+        Console.WriteLine();
+
+    }
+    static int ReadApplicationIndex(List<Application> applications)
+    {
+        if (applications.Count == 0)
+        {
+            Console.WriteLine("No applications found.");
+            return -1;
+
+        }
+        while(true)
+        {
+            Console.WriteLine("Which application number");
+            for (int i = 0; i < applications.Count; i++)
+            {
+                Console.WriteLine(i + "-" + applications[i].CompanyName + "/" + applications[i].Position + "/" + applications[i].Status);
+
+            }
+            string indexText = Console.ReadLine();
+            bool isNumber = int.TryParse(indexText, out int index);
+            if (isNumber == false)
+            {
+                Console.WriteLine("Please enter a valid number.");
+                Console.WriteLine();
+                continue;
+            }
+
+            if (index < 0 || index >= applications.Count) 
+            {
+                Console.WriteLine("Application number is out of range.");
+                Console.WriteLine();
+                continue;
+            }
+            return index;
+            
+        }
+    }
+    
+    static List<Application> LoadApplications()
     {
         List<Application> applications = new List<Application>();
+
+        if (File.Exists("applications.txt"))
+        {
+            string[] lines = File.ReadAllLines("applications.txt");
+
+            foreach (string line in lines)
+            {
+                string[] parts = line.Split('|');
+
+                string companyName = parts[0];
+                string position = parts[1];
+                string status = parts[2];
+
+                Application application = new Application(companyName, position, status);
+                applications.Add(application);
+            }
+        }
+
+        return applications;
+    }
+
+
+    static void SaveApplications(List<Application> applications)
+    {
+        List<string> lines = new List<string>();
+
+        foreach(Application application in applications)
+        {
+            string line = application.CompanyName + "|" + application.Position + "|" + application.Status;
+            lines.Add(line);
+
+        }
+
+        File.WriteAllLines("applications.txt",lines);
+    }
+
+    static void Main()
+    {
+        List<Application> applications = LoadApplications();
 
         bool isRunning = true;
         while (isRunning)
@@ -49,66 +196,22 @@ class Program
             string choice = Console.ReadLine();
             if (choice == "1")
             {
-                Console.WriteLine("Company Name:");
-                string companyName = Console.ReadLine();
-
-                Console.WriteLine("Position:");
-                string position = Console.ReadLine();
-
-                Application newApplication = new Application(companyName, position);
-                applications.Add(newApplication);
-
-                Console.WriteLine("Application added.");
-                Console.WriteLine();
+                AddApplication(applications);
             }
             else if (choice == "2")
             {
-                Console.WriteLine("Applications:");
-                Console.WriteLine();
-
-                foreach (Application application in applications)
-                {
-                    application.Print();
-
-                }
+                ListApplication(applications);
             }
             else if (choice == "3")
             {
-                Console.WriteLine("Which application number?");
+                ChangeApplicationStatus(applications);
 
-                for (int i = 0; i < applications.Count; i++)
-                {
-                    Console.WriteLine(i + "-" + applications[i].CompanyName + "/" + applications[i].Position + "/" + applications[i].Status);
-                    string indexText = Console.ReadLine();
-                    int index = Convert.ToInt32(indexText);
+            }
 
-                    Console.WriteLine("New Status");
-                    string newStatus = Console.ReadLine();
+            else if (choice == "4")
+            {
 
-                    applications[index].ChangeStatus(newStatus);
-                    Console.WriteLine("Status changed");
-                    Console.WriteLine();
-
-                }
-                }
-
-                else if (choice == "4")
-                {
-                    Console.WriteLine("Which application do you want to delete?");
-
-                    for (int i = 0; i < applications.Count; i++)
-                    {
-                        Console.WriteLine(i + " - " + applications[i].CompanyName + " / " + applications[i].Position + " / " + applications[i].Status);
-
-                    }
-
-                string indexText = Console.ReadLine();
-                int index = Convert.ToInt32(indexText);
-
-                applications.RemoveAt(index);
-                Console.WriteLine("Application deleted");
-                Console.WriteLine();
-
+                DeleteApplication(applications);
             }
 
 

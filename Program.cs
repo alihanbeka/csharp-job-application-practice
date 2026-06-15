@@ -8,25 +8,30 @@ class Application
     public string CompanyName { get;set;}
     public string Position { get;set;}
     public string Status { get;set;}
+    public string AppliedDate { get; set; }
 
     public Application(string companyName, string position)
     {
         CompanyName = companyName;
         Position = position;
         Status = "Applied";
+        AppliedDate = DateTime.Now.ToShortDateString();
+
     }
-    public Application(string companyName, string position, string status)
-{
-    CompanyName = companyName;
-    Position = position;
-    Status = status;
-}
+    public Application(string companyName, string position, string status, string appliedDate)
+    {
+        CompanyName = companyName;
+        Position = position;
+        Status = status;
+        AppliedDate = appliedDate;
+    }
 
     public void Print()
     {
         Console.WriteLine("Company:" + CompanyName);
         Console.WriteLine("Position:" + Position);
         Console.WriteLine("Status:" + Status);
+        Console.WriteLine("Applied Date:" + AppliedDate);
         Console.WriteLine("-----------------");
     }
     public void ChangeStatus(string newStatus)
@@ -39,6 +44,76 @@ class Application
 class Program
 {
 
+    static void SearchByCompany(List<Application> applications)
+    {
+        if (applications.Count == 0)
+        {
+            Console.WriteLine("No applications found.");
+            Console.WriteLine();
+            return;
+        }
+        Console.WriteLine("Company Search");
+        string searchText = Console.ReadLine();
+        bool found = false;
+
+        foreach (Application application in applications)
+        {
+            if(application.CompanyName.ToLower().Contains(searchText.ToLower()))
+            {
+                application.Print();
+                found = true;
+
+            }
+        }
+        if (found == false)
+        {
+            Console.WriteLine("No matching applications found.");
+            Console.WriteLine();
+        }
+    }
+    static string ReadStatus()
+    {
+        while (true)
+        {
+            Console.WriteLine("Choose new status:");
+            Console.WriteLine("1 - Applied");
+            Console.WriteLine("2 - Interview");
+            Console.WriteLine("3 - Rejected");
+            Console.WriteLine("4 - Offer");
+            Console.WriteLine("5 - Waiting");
+            
+            string choice= Console.ReadLine();
+            if (choice == "1")
+            {
+                return "Applied";
+
+            }
+            else if (choice == "2")
+            {
+                return "Interview";
+
+            }
+            else if (choice == "3")
+            {
+                return "Rejected";
+            }
+            else if (choice == "4")
+            {
+                return "Offer";
+            }
+            else if (choice == "5")
+            {
+                return "Waiting";
+            }
+            else
+            {
+                Console.WriteLine("Invalid status option.");
+                Console.WriteLine();
+            }
+
+        }
+
+    }
     static void DeleteApplication(List<Application> applications)
     {
         int index = ReadApplicationIndex(applications);
@@ -62,8 +137,7 @@ class Program
             return;
 
         }
-        Console.WriteLine("New Status;");
-        string newStatus = Console.ReadLine();
+        string newStatus = ReadStatus();
         applications[index].ChangeStatus(newStatus);
         SaveApplications(applications);
 
@@ -152,12 +226,26 @@ class Program
             {
                 string[] parts = line.Split('|');
 
-                string companyName = parts[0];
-                string position = parts[1];
-                string status = parts[2];
+                if (parts.Length == 3)
+                {
+                    string companyName = parts[0];
+                    string position = parts[1];
+                    string status = parts[2];
+                    string appliedDate = "Unknown";
 
-                Application application = new Application(companyName, position, status);
-                applications.Add(application);
+                    Application application = new Application(companyName, position, status, appliedDate);
+                    applications.Add(application);
+                }
+                else if (parts.Length == 4)
+                {
+                    string companyName = parts[0];
+                    string position = parts[1];
+                    string status = parts[2];
+                    string appliedDate = parts[3];
+
+                    Application application = new Application(companyName, position, status, appliedDate);
+                    applications.Add(application);
+                }
             }
         }
 
@@ -171,7 +259,7 @@ class Program
 
         foreach(Application application in applications)
         {
-            string line = application.CompanyName + "|" + application.Position + "|" + application.Status;
+            string line = application.CompanyName + "|" + application.Position + "|" + application.Status +"|" + application.AppliedDate;
             lines.Add(line);
 
         }
@@ -190,7 +278,8 @@ class Program
             Console.WriteLine("2 - List applications");
             Console.WriteLine("3 - Change status");
             Console.WriteLine("4 - Delete application");
-            Console.WriteLine("5 - Exit");
+            Console.WriteLine("5 - Search by company");
+            Console.WriteLine("6 - Exit");
             Console.WriteLine("Choose an option:");
 
             string choice = Console.ReadLine();
@@ -215,19 +304,22 @@ class Program
             }
 
 
-           
+
             else if (choice == "5")
             {
+                SearchByCompany(applications);
+            }
+            else if (choice == "6")
+            {
                 isRunning = false;
-
             }
             else
             {
-                Console.WriteLine("Invalid option");
+                Console.WriteLine("Invalid option.");
                 Console.WriteLine();
             }
-
         }
+
      
     }
 

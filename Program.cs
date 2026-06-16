@@ -43,6 +43,59 @@ class Application
 }
 class Program
 {
+    static void SearchByPosition(List<Application> applications)
+    {
+        if (applications.Count == 0)
+        {
+            Console.WriteLine("No applications found.");
+            Console.WriteLine();
+            return;
+        }
+
+        string searchText = ReadRequiredText("Position search:");
+        if (searchText == null)
+        {
+            return;
+        }
+        bool found = false;
+
+        foreach (Application application in applications)
+        {
+            if (application.Position.ToLower().Contains(searchText.ToLower()))
+            {
+                application.Print();
+                found = true;
+            }
+        }
+
+        if (found == false)
+        {
+            Console.WriteLine("No matching applications found.");
+            Console.WriteLine();
+        }
+    }
+    static string ReadRequiredText(string message)
+    {
+        while (true)
+        {
+            Console.WriteLine(message + " (B - Back to menu)");
+            string value = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                Console.WriteLine("This field is required");
+                Console.WriteLine();
+                continue;
+            }
+
+            if (value.Trim().ToLower() == "b")
+            {
+                return null;
+            }
+
+            return value.Trim();
+        }
+    }
 
     static void SearchByCompany(List<Application> applications)
     {
@@ -52,8 +105,11 @@ class Program
             Console.WriteLine();
             return;
         }
-        Console.WriteLine("Company Search");
-        string searchText = Console.ReadLine();
+        string searchText = ReadRequiredText("Company search:");
+        if (searchText == null)
+        {
+            return;
+        }
         bool found = false;
 
         foreach (Application application in applications)
@@ -81,6 +137,7 @@ class Program
             Console.WriteLine("3 - Rejected");
             Console.WriteLine("4 - Offer");
             Console.WriteLine("5 - Waiting");
+            Console.WriteLine("B - Back to menu");
             
             string choice= Console.ReadLine();
             if (choice == "1")
@@ -104,6 +161,10 @@ class Program
             else if (choice == "5")
             {
                 return "Waiting";
+            }
+            else if (choice.Trim().ToLower() == "b")
+            {
+                return null;
             }
             else
             {
@@ -138,6 +199,10 @@ class Program
 
         }
         string newStatus = ReadStatus();
+        if (newStatus == null)
+        {
+            return;
+        }
         applications[index].ChangeStatus(newStatus);
         SaveApplications(applications);
 
@@ -164,11 +229,16 @@ class Program
     }
     static void AddApplication(List<Application>applications)
     {
-        Console.WriteLine("Company Name:");
-        string companyName = Console.ReadLine();
-
-        Console.WriteLine("Position:");
-        string position = Console.ReadLine();
+        string companyName = ReadRequiredText("Company Name:");
+        if (companyName == null)
+        {
+            return;
+        }
+        string position = ReadRequiredText("Position:");
+        if (position == null)
+        {
+            return;
+        }
 
         Application newApplication = new Application(companyName, position);
         applications.Add(newApplication);
@@ -188,13 +258,17 @@ class Program
         }
         while(true)
         {
-            Console.WriteLine("Which application number");
+            Console.WriteLine("Which application number (B - Back to menu)");
             for (int i = 0; i < applications.Count; i++)
             {
                 Console.WriteLine(i + "-" + applications[i].CompanyName + "/" + applications[i].Position + "/" + applications[i].Status);
 
             }
             string indexText = Console.ReadLine();
+            if (indexText.Trim().ToLower() == "b")
+            {
+                return -1;
+            }
             bool isNumber = int.TryParse(indexText, out int index);
             if (isNumber == false)
             {
@@ -279,7 +353,8 @@ class Program
             Console.WriteLine("3 - Change status");
             Console.WriteLine("4 - Delete application");
             Console.WriteLine("5 - Search by company");
-            Console.WriteLine("6 - Exit");
+            Console.WriteLine("6 - Search by position");
+            Console.WriteLine("7 - Exit");
             Console.WriteLine("Choose an option:");
 
             string choice = Console.ReadLine();
@@ -302,14 +377,15 @@ class Program
 
                 DeleteApplication(applications);
             }
-
-
-
             else if (choice == "5")
             {
                 SearchByCompany(applications);
             }
             else if (choice == "6")
+            {
+                SearchByPosition(applications);
+            }
+            else if (choice == "7")
             {
                 isRunning = false;
             }
@@ -318,10 +394,9 @@ class Program
                 Console.WriteLine("Invalid option.");
                 Console.WriteLine();
             }
-        }
 
-     
-    }
+        }
+        }
 
 
 

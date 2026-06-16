@@ -11,10 +11,14 @@ The project is part of my learning path toward backend and full-stack developmen
 - Change application status using predefined status options
 - Delete an application
 - Search applications by company name
+- Search applications by position
 - Save applications to a text file
 - Load saved applications when the program starts
 - Store applied date for each application
 - Validate user input when selecting an application
+- Prevent empty company, position, and search input
+- Trim extra spaces from user input
+- Return to the menu from input screens with `B`
 - Support older saved records without applied date
 
 ## Practiced Concepts
@@ -33,6 +37,8 @@ The project is part of my learning path toward backend and full-stack developmen
 - String splitting with `Split`
 - Basic CRUD logic
 - Input validation with `int.TryParse`
+- Required text validation with `string.IsNullOrWhiteSpace`
+- Basic cancel/back flow with `B - Back to menu`
 - Simple backward compatibility for older file formats
 
 ## How It Works
@@ -66,7 +72,8 @@ If an older saved record does not include an applied date, the application loads
 3 - Change status
 4 - Delete application
 5 - Search by company
-6 - Exit
+6 - Search by position
+7 - Exit
 ```
 
 ## Status Options
@@ -77,6 +84,7 @@ If an older saved record does not include an applied date, the application loads
 3 - Rejected
 4 - Offer
 5 - Waiting
+B - Back to menu
 ```
 
 ## Example Saved Data
@@ -101,7 +109,6 @@ The main goal is to understand:
 
 ## Next Steps
 
-- Prevent empty company and position input
 - Improve file format using JSON
 - Add application details view
 - Convert this console logic into a .NET Web API

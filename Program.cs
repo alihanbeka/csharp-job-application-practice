@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 
 class Application
 {
@@ -9,6 +10,10 @@ class Application
     public string Position { get;set;}
     public string Status { get;set;}
     public string AppliedDate { get; set; }
+
+    public Application()
+    {
+    }
 
     public Application(string companyName, string position)
     {
@@ -290,36 +295,47 @@ class Program
     
     static List<Application> LoadApplications()
     {
-        List<Application> applications = new List<Application>();
-
-        if (File.Exists("applications.txt"))
+        if(File.Exists("applications.json"))
         {
-            string[] lines = File.ReadAllLines("applications.txt");
+            string json = File.ReadAllText("applications.json");
+            List<Application> applications = JsonSerializer.Deserialize<List<Application>>(json);
 
-            foreach (string line in lines)
+            if(applications==null)
             {
-                string[] parts = line.Split('|');
+                return new List<Application>();
+            }
+            return applications;
+        }
 
-                if (parts.Length == 3)
-                {
-                    string companyName = parts[0];
-                    string position = parts[1];
-                    string status = parts[2];
-                    string appliedDate = "Unknown";
+        if(File.Exists("applications.txt"))
+        {
+            List<Application> applications = LoadApplicationsFromTxt();
+            SaveApplications(applications);
+            return applications;
+        }
 
-                    Application application = new Application(companyName, position, status, appliedDate);
-                    applications.Add(application);
-                }
-                else if (parts.Length == 4)
-                {
-                    string companyName = parts[0];
-                    string position = parts[1];
-                    string status = parts[2];
-                    string appliedDate = parts[3];
 
-                    Application application = new Application(companyName, position, status, appliedDate);
-                    applications.Add(application);
-                }
+        return new List<Application>();
+
+    }
+
+    static List<Application> LoadApplicationsFromTxt()
+    {
+        List<Application> applications = new List<Application>();
+        string[] lines = File.ReadAllLines("applications.txt");
+
+        foreach(string line in lines)
+        {
+            string[] parts = line.Split('|');
+            if (parts.Length == 3)
+            {
+                string companyName = parts[0];
+                string position = parts[1];
+                string status = parts[2];
+                string appliedDate = "Unknown";
+
+                Application application = new Application(companyName, position, status, appliedDate);
+                applications.Add(application);
             }
         }
 
@@ -329,16 +345,13 @@ class Program
 
     static void SaveApplications(List<Application> applications)
     {
-        List<string> lines = new List<string>();
+        JsonSerializerOptions options = new JsonSerializerOptions();
+        options.WriteIndented = true;
 
-        foreach(Application application in applications)
-        {
-            string line = application.CompanyName + "|" + application.Position + "|" + application.Status +"|" + application.AppliedDate;
-            lines.Add(line);
+        string json = JsonSerializer.Serialize(applications, options);
+        File.WriteAllText("applications.json", json);
 
-        }
 
-        File.WriteAllLines("applications.txt",lines);
     }
 
     static void Main()
